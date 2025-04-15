@@ -1,6 +1,6 @@
 import aiohttp
 
-BASE_URL = "http://localhost:8000/api"
+BASE_URL = "http://207.154.246.175:8099/api"
 GET_USER_URL = f"{BASE_URL}/users/get/"
 ADD_USER_URL = f"{BASE_URL}/users/add/"
 UPDATE_USER_URL = f"{BASE_URL}/users/update/"
