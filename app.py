@@ -2,6 +2,9 @@ import asyncio
 import logging
 import sys
 from os import getenv
+
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher
@@ -10,10 +13,16 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.deep_linking import create_start_link
+from aiogram.methods.create_chat_invite_link import CreateChatInviteLink
 
 from modules.filters import TextEqualsFilter
 from modules.functions import get_user, add_user, update_user, get_or_create_invitation, invite_user
 from modules.keyboards import get_ok_keyboard, get_channels_keyboards
+
+
+class GetStartTokenState(StatesGroup):
+    link = State()
+
 
 load_dotenv()
 
@@ -43,7 +52,29 @@ To get the link of a private channel, you MUST do the following actions:
 
 If you have any questions, contact @e_rahimjon!""",
     "HERE_ARE_THE_CHANNELS_RESPONSE": "Here are the list of channels to follow:",
-    "ALL_CHANNELS_SUBSCRIBED": lambda link: f"Here is your referral link —> {link}. Once 3 people go to bot from your link and join all the channels, we will give you a private link to join marathon channel. By the way, the one whose referral link is used the most will be gifted with FREE Consultation!",
+    "ALL_CHANNELS_SUBSCRIBED": lambda who, link: f"""🚀 {who} is inviting you to "TOP Students" marathon -  knowledge worth of nearly two million U.S. dollars 
+
+Imagine a group of students accepted into some of the best universities in the world teaching you everything they know about admissions to universities abroad. No need to imagine. It is here.
+Join us on a 5-day-admissions marathon where you will learn every bits of applying to TOP colleges in the U.S. and beyond. 
+
+❕ Requirements to join:
+
+- register through the bot
+- invite 3 of your friends to the marathon 
+
+🎁 We are also giving out 10 consultations for free during the marathon:
+
+- 5 consultations to the participants who invited the most number of their friends 
+- during the webinars, you can donate. Everyday the person to donate the most amount of money will receive a consultation. (All the money donated will  be given to a charity)
+
+🗓 Dates: April 21-25
+
+🔽Join:
+
+{link}""",
+    "CONGRATULATIONS_RESPONSE": lambda link: f"""Congratulations!
+You have done completed all the tasks. Here is your link to join our Marathon: {link}.
+Good Luck! See you in the marathon!"""
 }
 
 ERROR = "An unexpected error occurred on the server. Please try again later. /start"
@@ -55,11 +86,17 @@ async def check_subscribed(user_id: str | int, channel_id: str | int) -> bool:
 
 
 @dp.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
+async def command_start_handler(message: Message, state: FSMContext) -> None:
     message_split = message.text.split(" ")
     token = None
     if len(message_split) == 2:
         token = message_split[1]
+
+    if token:
+        await state.update_data(token=token)
+
+    state_data = await state.get_data()
+    print(state_data)
 
     get_response = await get_user(message.from_user.id)
     if get_response.status != 200:
@@ -73,12 +110,6 @@ async def command_start_handler(message: Message) -> None:
         if add_response.status != 201:
             await message.answer(RESPONSES.get("SERVER_ERROR_RESPONSE", ERROR))
         else:
-            if token:
-                invite_response = await invite_user(message.from_user.id, token)
-                if invite_response.status == 200:
-                    json_response = await invite_response.json()
-                    await bot.send_message(json_response.get("user_id"),
-                                           f"You have successfully invited {message.from_user.full_name}\nYour invitations count: {json_response.get('count')}")
             await message.answer(
                 RESPONSES.get("WELCOME_RESPONSE", ERROR), reply_markup=get_ok_keyboard()
             )
@@ -94,7 +125,7 @@ async def ok_handler(message: Message) -> None:
 
 
 @dp.callback_query()
-async def callback_query_handler(call: CallbackQuery) -> None:
+async def callback_query_handler(call: CallbackQuery, state: FSMContext) -> None:
     if call.data == "subscribed":
         status = []
         for channel in CHANNELS:
@@ -103,8 +134,30 @@ async def callback_query_handler(call: CallbackQuery) -> None:
             response = await get_or_create_invitation(call.message.chat.id)
             if response.status in (200, 201):
                 json_response = await response.json()
+                state_data = await state.get_data()
+                print(state_data)
+                token = state_data.get("token")
+                if token:
+                    invite_response = await invite_user(call.from_user.id, token)
+                    json_res = await invite_response.json()
+                    print(json_res)
+                    if invite_response.status == 200:
+                        await bot.send_message(json_res.get("user_id"),
+                                               f"{call.message.from_user.full_name} has clicked start with your invitation link")
+                if json_res.get("count") == 1 and json_res.get("user_id"):
+                    invite_link = await bot.create_chat_invite_link(
+                        chat_id=-1002408710956,
+                        name='"TOP Students" marathon',
+                        member_limit=1,
+                    )
+                    await bot.send_message(json_res.get("user_id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(invite_link.invite_link))
                 link = await create_start_link(bot=bot, payload=json_response.get("token"))
-                await call.message.answer(RESPONSES.get("ALL_CHANNELS_SUBSCRIBED", ERROR)(link))
+                await call.message.answer(RESPONSES.get("ALL_CHANNELS_SUBSCRIBED", ERROR)(
+                    f"@{call.from_user.username}"
+                    if call.from_user.username
+                    else call.from_user.full_name,
+                    link
+                ))
         else:
             await call.message.delete()
             await call.answer("Please join all our channels", show_alert=True)
