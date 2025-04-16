@@ -142,7 +142,7 @@ async def callback_query_handler(call: CallbackQuery, state: FSMContext) -> None
                         json_res = await invite_response.json()
                         await bot.send_message(json_res.get("user_id"),
                                                f"{call.message.from_user.full_name} has clicked start with your invitation link")
-                        if json_res.get("count") == 1 and json_res.get("user_id"):
+                        if json_res.get("count") == 3 and json_res.get("user_id"):
                             invite_link = await bot.create_chat_invite_link(
                                 chat_id=-1002408710956,
                                 name='"TOP Students" marathon',
