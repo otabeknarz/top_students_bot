@@ -11,7 +11,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InputFile
 from aiogram.utils.deep_linking import create_start_link
 from aiogram.methods.create_chat_invite_link import CreateChatInviteLink
 
@@ -152,7 +152,8 @@ async def callback_query_handler(call: CallbackQuery, state: FSMContext) -> None
                     )
                     await bot.send_message(json_res.get("user_id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(invite_link.invite_link))
                 link = await create_start_link(bot=bot, payload=json_response.get("token"))
-                await call.message.answer(RESPONSES.get("ALL_CHANNELS_SUBSCRIBED", ERROR)(
+                photo = InputFile(filename="image.jpg")
+                await call.message.answer_photo(photo=photo, caption=RESPONSES.get("ALL_CHANNELS_SUBSCRIBED", ERROR)(
                     f"@{call.from_user.username}"
                     if call.from_user.username
                     else call.from_user.full_name,
