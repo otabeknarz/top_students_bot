@@ -159,6 +159,8 @@ async def callback_query_handler(call: CallbackQuery, state: FSMContext) -> None
                     else call.from_user.full_name,
                     link
                 ))
+                await asyncio.sleep(0.5)
+                await call.message.answer("Forward this message to at least 3 of your friends and make sure they register. Once 3 of them accomplish this, you will get the private link for our marathon channel.")
         else:
             await call.message.delete()
             await call.answer("Please join all our channels", show_alert=True)
