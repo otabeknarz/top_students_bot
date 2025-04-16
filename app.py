@@ -11,12 +11,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery, InputFile
+from aiogram.types import Message, CallbackQuery, InputFile, FSInputFile
 from aiogram.utils.deep_linking import create_start_link
-from aiogram.methods.create_chat_invite_link import CreateChatInviteLink
 
 from modules.filters import TextEqualsFilter
-from modules.functions import get_user, add_user, update_user, get_or_create_invitation, invite_user
+from modules.functions import get_user, add_user, get_or_create_invitation, invite_user
 from modules.keyboards import get_ok_keyboard, get_channels_keyboards
 
 
@@ -139,20 +138,19 @@ async def callback_query_handler(call: CallbackQuery, state: FSMContext) -> None
                 token = state_data.get("token")
                 if token:
                     invite_response = await invite_user(call.from_user.id, token)
-                    json_res = await invite_response.json()
-                    print(json_res)
                     if invite_response.status == 200:
+                        json_res = await invite_response.json()
                         await bot.send_message(json_res.get("user_id"),
                                                f"{call.message.from_user.full_name} has clicked start with your invitation link")
-                if json_res.get("count") == 1 and json_res.get("user_id"):
-                    invite_link = await bot.create_chat_invite_link(
-                        chat_id=-1002408710956,
-                        name='"TOP Students" marathon',
-                        member_limit=1,
-                    )
-                    await bot.send_message(json_res.get("user_id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(invite_link.invite_link))
+                        if json_res.get("count") == 1 and json_res.get("user_id"):
+                            invite_link = await bot.create_chat_invite_link(
+                                chat_id=-1002408710956,
+                                name='"TOP Students" marathon',
+                                member_limit=1,
+                            )
+                            await bot.send_message(json_res.get("user_id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(invite_link.invite_link))
                 link = await create_start_link(bot=bot, payload=json_response.get("token"))
-                photo = InputFile(filename="image.jpg")
+                photo = FSInputFile(path="image.jpg")
                 await call.message.answer_photo(photo=photo, caption=RESPONSES.get("ALL_CHANNELS_SUBSCRIBED", ERROR)(
                     f"@{call.from_user.username}"
                     if call.from_user.username
