@@ -48,7 +48,7 @@ RESPONSES = {
 
 To get the link of a private channel, you MUST do the following actions:
 - Follow all the required channels of marathon organizers
-- Share your referral link and make sure 3 people will use the bot
+- Share your referral link and make sure 3 people register through the bot
 
 If you have any questions, contact @e_rahimjon!""",
     "HERE_ARE_THE_CHANNELS_RESPONSE": "Here are the list of channels to follow:",
