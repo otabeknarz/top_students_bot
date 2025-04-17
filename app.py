@@ -102,7 +102,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         add_response = await add_user(
             {
                 "id": str(message.from_user.id),
-                "username": message.from_user.username,
+                "username": message.from_user.username if message.from_user.username else str(message.from_user.id),
                 "name": message.from_user.full_name,
             }
         )
