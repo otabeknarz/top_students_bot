@@ -136,6 +136,7 @@ async def ok_handler(message: Message) -> None:
         link = "https://t.me/+OpLSPUn-La42NzEy"
         try:
             await bot.send_message(user.get("id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(link))
+            print(f"sent {user.get('username')} {user.get('name')}")
             sent_count += 1
         except:
             pass
