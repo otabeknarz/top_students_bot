@@ -143,12 +143,8 @@ async def callback_query_handler(call: CallbackQuery, state: FSMContext) -> None
                         await bot.send_message(json_res.get("user_id"),
                                                f"{call.message.from_user.full_name} has clicked start with your invitation link")
                         if json_res.get("count") == 3 and json_res.get("user_id"):
-                            invite_link = await bot.create_chat_invite_link(
-                                chat_id=-1002408710956,
-                                name='"TOP Students" marathon',
-                                member_limit=1,
-                            )
-                            await bot.send_message(json_res.get("user_id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(invite_link.invite_link))
+                            invite_link = "https://t.me/+OpLSPUn-La42NzEy"
+                            await bot.send_message(json_res.get("user_id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(invite_link))
                 link = await create_start_link(bot=bot, payload=json_response.get("token"))
                 photo = FSInputFile(path="image.jpg")
                 await call.message.answer_photo(photo=photo, caption=RESPONSES.get("ALL_CHANNELS_SUBSCRIBED", ERROR)(
