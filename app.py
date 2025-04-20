@@ -11,11 +11,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery, InputFile, FSInputFile
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.utils.deep_linking import create_start_link
 
 from modules.filters import TextEqualsFilter
-from modules.functions import get_user, add_user, get_or_create_invitation, invite_user
+from modules.functions import get_user, add_user, get_or_create_invitation, invite_user, get_users
 from modules.keyboards import get_ok_keyboard, get_channels_keyboards
 
 
@@ -121,6 +121,26 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
 @dp.message(TextEqualsFilter("OK ✅"))
 async def ok_handler(message: Message) -> None:
     await message.answer(RESPONSES.get("HERE_ARE_THE_CHANNELS_RESPONSE", ERROR), reply_markup=get_channels_keyboards())
+
+
+@dp.message(TextEqualsFilter("send links"))
+async def ok_handler(message: Message) -> None:
+    response = await get_users()
+    if response.status != 200:
+        await message.answer(RESPONSES.get("SERVER_ERROR_RESPONSE", ERROR) + "\n" + await response.text())
+        return
+    json_response = await response.json()
+    users = json_response.get("users")
+    sent_count = 0
+    for user in users:
+        link = "https://t.me/+OpLSPUn-La42NzEy"
+        try:
+            await bot.send_message(user.get("id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(link))
+            sent_count += 1
+        except:
+            pass
+        await asyncio.sleep(0.5)
+    await message.answer(f"{sent_count} users were sent successfully\noverall {len(users)}")
 
 
 @dp.callback_query()

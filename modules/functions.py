@@ -31,3 +31,8 @@ async def get_or_create_invitation(user_id: str | int) -> aiohttp.ClientResponse
 async def invite_user(user_id: str | int, invitation_token: str) -> aiohttp.ClientResponse:
     async with aiohttp.ClientSession() as session:
         return await session.get(f"{INVITE_USER_URL}{invitation_token}/{user_id}/")
+
+
+async def get_users() -> aiohttp.ClientResponse:
+    async with aiohttp.ClientSession() as session:
+        return await session.get(GET_USER_URL)
