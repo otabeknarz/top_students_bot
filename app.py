@@ -129,8 +129,7 @@ async def ok_handler(message: Message) -> None:
     if response.status != 200:
         await message.answer(RESPONSES.get("SERVER_ERROR_RESPONSE", ERROR) + "\n" + await response.text())
         return
-    json_response = await response.json()
-    users = json_response.get("users")
+    users = await response.json()[:3]
     sent_count = 0
     for user in users:
         link = "https://t.me/+OpLSPUn-La42NzEy"
