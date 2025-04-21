@@ -129,9 +129,9 @@ async def ok_handler(message: Message) -> None:
     if response.status != 200:
         await message.answer(RESPONSES.get("SERVER_ERROR_RESPONSE", ERROR) + "\n" + await response.text())
         return
-    users = await response.json()[:3]
+    users = await response.json()
     sent_count = 0
-    for user in users:
+    for user in users[:3]:
         link = "https://t.me/+OpLSPUn-La42NzEy"
         try:
             await bot.send_message(user.get("id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(link))
