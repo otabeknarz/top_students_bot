@@ -131,14 +131,19 @@ async def ok_handler(message: Message) -> None:
         return
     users = await response.json()
     sent_count = 0
-    for user in users[:3]:
+    all_count = 0
+    for user in users:
         link = "https://t.me/+OpLSPUn-La42NzEy"
+        if sent_count % 10 == 0:
+            await message.answer(f"{sent_count} users were sent successfully\noverall (for now) {all_count}")
         try:
             await bot.send_message(user.get("id"), RESPONSES.get("CONGRATULATIONS_RESPONSE")(link))
             print(f"sent {user.get('username')} {user.get('name')}")
             sent_count += 1
         except:
             pass
+        finally:
+            all_count += 1
         await asyncio.sleep(0.5)
     await message.answer(f"{sent_count} users were sent successfully\noverall {len(users)}")
 
